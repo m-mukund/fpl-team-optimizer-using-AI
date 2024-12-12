@@ -23,4 +23,4 @@ ENV FLASK_RUN_PORT=8000
 EXPOSE 8000
 
 # Start the Flask app
-CMD ["python3", "app.py"]
+CMD ["sh", "-c", "python3 get_players.py && python3 app.py"]

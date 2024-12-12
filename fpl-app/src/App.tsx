@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Autocomplete from "./Autocomplete";
 
 interface Player {
-  id: number;
-  name: string;
+  player_id: number;
+  web_name: string;
 }
 
 interface OptimalTransfer {
@@ -18,13 +18,18 @@ interface OptimalTransfer {
   improvement: number;
 }
 
+interface BestTeam {
+  players: Player[];
+}
+
 function App() {
   const [team, setTeam] = useState<Player[]>([]);
   const [remainingBudget, setRemainingBudget] = useState<string>("");
   const [optimalTransfer, setOptimalTransfer] = useState<OptimalTransfer | null>(null);
+  const [bestTeam, setBestTeam] = useState<BestTeam | null>(null);
 
   const handleAddPlayer = (player: Player) => {
-    if (team.some((p) => p.id === player.id)) {
+    if (team.some((p) => p.player_id === player.player_id)) {
       alert("Player is already in the team!");
       return;
     }
@@ -32,7 +37,7 @@ function App() {
   };
 
   const handleRemovePlayer = (playerId: number) => {
-    setTeam((prevTeam) => prevTeam.filter((p) => p.id !== playerId));
+    setTeam((prevTeam) => prevTeam.filter((p) => p.player_id !== playerId));
   };
 
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +55,7 @@ function App() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/predict", {
+      const response = await fetch("http://34.55.194.187/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -85,6 +90,29 @@ function App() {
     }
   };
 
+  const handleBestTeamRequest = async () => {
+    try {
+      const response = await fetch("http://34.55.194.187/best_team");
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+  
+      if (data.success && data.best_team && data.best_team.players) {
+        setBestTeam({ players: data.best_team.players });
+      } else {
+        console.warn("Unexpected data structure:", data);
+        alert("Received unexpected data. Please contact support.");
+      }
+    } catch (error) {
+      console.error("Error fetching the best team:");
+      alert("An error occurred while fetching the best team. Please try again later.");
+    }
+  };
+  
+
   return (
     <div style={{ margin: "2rem" }}>
       <h1>FPL Threat Predictor</h1>
@@ -99,10 +127,10 @@ function App() {
         <h4>Your Current Team:</h4>
         <ul>
           {team.map((player) => (
-            <li key={player.id} style={{ marginBottom: "0.5rem" }}>
-              {player.name}{" "}
+            <li key={player.player_id} style={{ marginBottom: "0.5rem" }}>
+              {player.web_name}{" "}
               <button
-                onClick={() => handleRemovePlayer(player.id)}
+                onClick={() => handleRemovePlayer(player.player_id)}
                 style={{
                   marginLeft: "1rem",
                   padding: "0.2rem 0.5rem",
@@ -111,6 +139,7 @@ function App() {
                   border: "none",
                   borderRadius: "3px",
                   cursor: "pointer",
+                  zIndex: 1000,
                 }}
               >
                 Remove
@@ -150,11 +179,25 @@ function App() {
       >
         Predict Threat
       </button>
+      <button
+        onClick={handleBestTeamRequest}
+        style={{
+          marginTop: "1rem",
+          padding: "0.7rem 2rem",
+          background: "blue",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Get Best Team
+      </button>
       {optimalTransfer && (
         <div style={{ marginTop: "2rem" }}>
           <h3>Optimal Transfer:</h3>
           <p>
-            <strong>Outgoing Player:</strong> {optimalTransfer.outgoing_player.name}
+            <strong>Outgoing Player:</strong> {optimalTransfer.outgoing_player.web_name}
           </p>
           <p>
             <strong>Incoming Player:</strong> {optimalTransfer.incoming_player.position}{" "}
@@ -166,6 +209,16 @@ function App() {
             <strong>Improvement:</strong>{" "}
             {optimalTransfer.improvement.toFixed(2)} points
           </p>
+        </div>
+      )}
+      {bestTeam && (
+        <div style={{ marginTop: "2rem" }}>
+          <h3>Best Team:</h3>
+          <ul>
+            {bestTeam.players.map((player) => (
+              <li key={player.player_id}>{player.web_name}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

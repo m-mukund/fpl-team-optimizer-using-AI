@@ -16,8 +16,14 @@ COPY . .
 # Build the app for production
 RUN npm run build
 
-# Expose port 80
-EXPOSE 5173
+# Step 2: Set up Nginx to serve the build files
+FROM nginx:alpine AS production-stage
 
-# Start Nginx
-CMD ["npm", "run", "dev"]
+# Copy the build files from the build stage to Nginx's default folder
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose port 80 for Nginx
+EXPOSE 80
+
+# Run Nginx in the foreground
+CMD ["nginx", "-g", "daemon off;"]

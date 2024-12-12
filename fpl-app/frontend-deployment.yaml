@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: mukund0004/frontend:latest
+        image: mukund0004/frontend:v2
         ports:
-        - containerPort: 5173
+        - containerPort: 80
         resources:
           requests:
             cpu: 100m

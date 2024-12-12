@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 interface Player {
-  id: number;
-  name: string;
+  player_id: number;
+  web_name: string;
 }
 
 interface AutocompleteProps {
@@ -24,9 +24,10 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ placeholder, onPlayerSelect
       }
 
       try {
-        const response = await axios.get<Player[]>('http://127.0.0.1:8000/autocomplete', {
+        const response = await axios.get<Player[]>('http://34.55.194.187/autocomplete', {
           params: { query: searchTerm },
         });
+        console.log(response.data)
         setSuggestions(response.data);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -44,7 +45,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ placeholder, onPlayerSelect
   };
 
   const handleSuggestionClick = (player: Player) => {
-    setSearchTerm(player.name);
+    setSearchTerm(player.web_name);
     setShowSuggestions(false);
     onPlayerSelect(player); // Pass selected player to parent
   };
@@ -83,7 +84,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ placeholder, onPlayerSelect
         >
           {suggestions.map((player) => (
             <li
-              key={player.id}
+              key={player.player_id}
               onClick={() => handleSuggestionClick(player)}
               style={{
                 padding: "8px",
@@ -93,7 +94,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ placeholder, onPlayerSelect
               }}
               onMouseDown={(e) => e.preventDefault()} // Prevent input blur
             >
-              {player.name}
+              {player.web_name}
             </li>
           ))}
         </ul>
